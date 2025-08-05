@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environments
+venv/
+.env
+*.env
+
+# Streamlit cache
+.streamlit/
+
+# Models
+*.pkl
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db
