@@ -1,6 +1,6 @@
 import pandas as pd
 
-def load_and_prepare_data(path="data/sales_data.csv"):
+def load_and_prepare_data(path="sales_data.csv"):
     df = pd.read_csv(path)
     df["Date"] = pd.to_datetime(df["Date"])
     df["Month"] = df["Date"].dt.month

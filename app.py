@@ -2,6 +2,15 @@ import streamlit as st
 from forecasting.forecast_sales import forecast_sales
 from chatbot import model  # Gemini modelini içe aktar
 
+def extract_tags(text: str) -> list:
+    prompt = f"""
+    Kullanıcının mesajından 3-5 tane anahtar kelime çıkar. Virgülle ayır ve sadece kelimeleri ver.
+    Mesaj: "{text}"
+    """
+    response = model.generate_content(prompt)
+    tags = response.text.strip().split(",")
+    return [tag.strip().lower() for tag in tags if tag.strip()]
+
 st.set_page_config(page_title="Satış Tahmin Aracı", page_icon="📦")
 
 st.title("📦 Satış Tahmin Aracı")
@@ -34,6 +43,9 @@ st.markdown("---")
 # --- LLM'E SORU ALANI ---
 st.subheader("💬 Herhangi bir sorunuz varsa Gemini hazır! ")
 
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+
 user_question = st.text_input("Sorunuzu buraya yazın (örn: Bu kadar satış tahmini normal mi?)")
 
 if st.button("🤖 LLM'e Sor") and user_question.strip() != "":
@@ -55,7 +67,37 @@ if st.button("🤖 LLM'e Sor") and user_question.strip() != "":
     response = model.generate_content(prompt)
 
     if response.parts:
+        # Yanıtı sohbet geçmişine ekle, tags'ı da hesapla
+        st.session_state['chat_history'].append({
+            'user': user_question,
+            'bot': response.text,
+            'tags': extract_tags(user_question)  # veya tags oluşturma fonksiyonu
+        })
         st.markdown("#### 🧠 LLM Yanıtı:")
         st.write(response.text)
     else:
         st.error("❌ LLM cevap döndüremedi. Cevap boş geldi.")
+
+st.subheader("Sohbet Geçmişi")
+# Filtreleme ve sohbet geçmişi gösterimi
+all_tags = set()
+for chat in st.session_state['chat_history']:
+    all_tags.update(chat.get("tags", []))
+
+selected_tags = st.multiselect("🗂️ Sohbet geçmişini filtrele", sorted(all_tags))
+
+if selected_tags:
+    filtered_chats = [
+        chat for chat in st.session_state['chat_history']
+        if any(tag in chat.get("tags", []) for tag in selected_tags)
+    ]
+else:
+    filtered_chats = []
+
+if filtered_chats:
+    for chat in filtered_chats:
+        st.write(f"👤 Kullanıcı: {chat['user']}")
+        st.write(f"🤖 Bot: {chat['bot']}")
+        st.markdown("---")
+else:
+    st.info("Filtrelenen sohbet yok ya da tag seçilmedi.")
