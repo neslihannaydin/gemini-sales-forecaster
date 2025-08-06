@@ -24,10 +24,10 @@ def train_category_model(category_name: str):
         print("❌ Yetersiz veri.")
         return
 
-    # 🎯 Hedef değişken
+    # Hedef değişken
     y = df_cat["Units Sold"]
 
-    # 🧠 Ortak ve kategoriye özel çıkarılacak sütunlar
+    # Ortak ve kategoriye özel çıkarılacak sütunlar
     common_excludes = ["Discount"]
     custom_excludes = {
         "toys": [
@@ -54,7 +54,7 @@ def train_category_model(category_name: str):
         if col.startswith("Category_") or col.startswith("Promotion_") or col.startswith("Seasonality_")
     ]
 
-    # 📌 Tüm çıkarılacak sütunlar
+    # Tüm çıkarılacak sütunlar
     all_excludes = list(set(common_excludes + category_excludes + dynamic_excludes))
 
     # Özellik matrisi (X)

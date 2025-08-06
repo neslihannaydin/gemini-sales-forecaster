@@ -1,6 +1,6 @@
 import streamlit as st
 from forecasting.forecast_sales import forecast_sales
-from chatbot import model  
+from chatbot import model  # Gemini modelini içe aktar
 
 st.set_page_config(page_title="Satış Tahmin Aracı", page_icon="📦")
 
@@ -27,7 +27,7 @@ if "last_inputs" not in st.session_state:
 
 st.title("📦 Satış Tahmin Aracı")
 
-
+# --- GİRİŞ ALANLARI ---
 category = st.selectbox("Kategori", ["toys", "furniture", "clothing", "electronics", "groceries"])
 month_offset = st.slider("Kaç ay sonrası tahmin edilsin?", 1, 12, 3)
 price = st.number_input("Ürün Fiyatı", min_value=0.0, format="%.2f")
@@ -35,7 +35,7 @@ competitor_price = st.number_input("Rakip Fiyatı", min_value=0.0, format="%.2f"
 inventory = st.number_input("Stok Miktarı", min_value=0)
 region = st.selectbox("Bölge", ["North", "South", "East", "West"])
 
-
+# --- TAHMİN BUTONU ---
 if st.button("🔮 Tahmin Et"):
     try:
         prediction = forecast_sales(
@@ -61,7 +61,7 @@ if st.button("🔮 Tahmin Et"):
     except Exception as e:
         st.error(f"❌ Tahmin yapılamadı: {e}")
 
-
+# --- CHATBOT BÖLÜMÜ ---
 st.info("👋 Merhaba! Ben satış danışmanınızım. Geçmiş veriler, stok bilgisi ve fiyatlara göre sana analiz yapabilirim. Tahmin aldıysan detaylarını sorabilir, almadıysan yine de bana danışabilirsin!")
 st.subheader("🧠 Chatbot ile Sohbet Et")
 
@@ -85,7 +85,7 @@ def explain_forecast_with_llm(data: dict, user_question: str) -> str:
     response = model.generate_content(prompt)
     return response.text if response.parts else "❌ LLM cevap döndüremedi. Lütfen daha net sor."
 
-
+# --- Sohbet Formu ---
 with st.form("chat_form", clear_on_submit=True):
     user_question = st.text_area("Bir soru yazın...", height=50)
     send = st.form_submit_button("💬 Gönder")
@@ -100,7 +100,7 @@ if send and user_question.strip():
         data["predicted_sales"] = st.session_state.last_prediction
         response_text = explain_forecast_with_llm(data, user_question)
 
-    
+    # Tag çıkarımı ve geçmişe kayıt
     tags = extract_tags(user_question)
     st.session_state.chat_history.append({
         "user": user_question,
@@ -108,15 +108,15 @@ if send and user_question.strip():
         "tags": tags
     })
 
-
+# --- Chat Geçmişi: Scrollable + Filtrelenebilir ---
 st.markdown("### 🧾 Sohbet Geçmişi")
 
-
+# 🔎 Filtreleme alanı
 all_tags = set()
 for chat in st.session_state.chat_history:
     all_tags.update(chat.get("tags", []))
 
-selected_tags = st.multiselect("🗂️ Sohbet geçmişini filtrele", sorted(all_tags))
+selected_tags = st.multiselect("🗂 Sohbet geçmişini filtrele", sorted(all_tags))
 
 if selected_tags:
     filtered_chats = [
@@ -126,7 +126,7 @@ if selected_tags:
 else:
     filtered_chats = st.session_state.chat_history
 
-
+# --- Stil (scrollable container) ---
 chat_container_css = """
 <style>
 .scrollable-chat {
@@ -152,7 +152,7 @@ chat_container_css = """
 st.markdown(chat_container_css, unsafe_allow_html=True)
 st.markdown('<div class="scrollable-chat">', unsafe_allow_html=True)
 
-
+# Sohbeti yeni üstte olacak şekilde sırala
 for chat in reversed(filtered_chats):
     with st.chat_message("user"):
         st.markdown(f"""

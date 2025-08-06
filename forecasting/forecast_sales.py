@@ -1,5 +1,3 @@
-# forecasting/forecast_sales.py
-
 import pandas as pd
 import joblib
 from datetime import datetime, timedelta
