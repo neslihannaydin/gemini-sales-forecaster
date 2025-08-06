@@ -1,5 +1,3 @@
-# main.py
-
 from forecasting.forecast_sales import forecast_sales
 import google.generativeai as genai
 import os
